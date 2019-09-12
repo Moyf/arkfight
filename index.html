@@ -13,7 +13,7 @@
 	<body onload="draw('blood1');draw('blood2');">
         <div id="face">
             <span title="你们不是喜欢让干员单挑互相值班吗？来啊，值个痛！">
-                <h1>干员单挑系统 v0.36</h1>
+                <h1>干员单挑系统 v0.37</h1>
             </span>		
 		
 		<p>这个其实就是做着玩儿的~<br>纯属娱乐，别真的上头值班噢  (￣▽￣)ノ</p>
@@ -28,7 +28,7 @@
                 
                 <h4>干员1 {{ char_1.name }}</h4>
                 名称：<input v-model="char_1.name"><br>
-                总血量：<input v-model="char_1.hp_max"><br>
+                总血量：<input v-model="max_hp_1"><br>
                 攻击力：<input v-model="char_1.atk"><br>
                 防御力：<input v-model="char_1.def"><br>
                 攻击间隔：<input v-model="char_1.atk_invl"><br>
@@ -37,7 +37,7 @@
             <div>
                 <h4>干员2 {{ char_2.name }}</h4>
                 名称：<input v-model="char_2.name"><br>
-                总血量：<input v-model="char_2.hp_max"><br>
+                总血量：<input v-model="max_hp_2"><br>
                 攻击力：<input v-model="char_2.atk"><br>
                 防御力：<input v-model="char_2.def"><br>
                 攻击间隔：<input v-model="char_2.atk_invl"><br>
@@ -55,8 +55,10 @@
                 </tr>
                 <tr>
                     <td>血量</td>
-                    <td><canvas id="blood1" width="100" height="10">您的浏览器不支持H5 canvas属性</canvas><br>{{char_1.hp}} / {{ char_1.hp_max }}</td>
-                    <td><canvas id="blood2" width="100" height="10">您的浏览器不支持H5 canvas属性</canvas><br>{{char_2.hp}} / {{ char_2.hp_max }}</td>
+                    <!-- <td><canvas id="blood1" width="100" height="10">您的浏览器不支持H5 canvas属性</canvas><br>{{char_1.hp}} / {{ char_1.hp_max }}</td>
+                    <td><canvas id="blood2" width="100" height="10">您的浏览器不支持H5 canvas属性</canvas><br>{{char_2.hp}} / {{ char_2.hp_max }}</td> -->
+                    <td><canvas id="blood1" width="100" height="10">您的浏览器不支持H5 canvas属性</canvas><br>{{ char_1.hp }} / {{ max_hp_1 }}</td>
+                    <td><canvas id="blood2" width="100" height="10">您的浏览器不支持H5 canvas属性</canvas><br>{{ char_2.hp }} / {{ max_hp_2 }}</td>
                     
                 </tr>
                 <tr>
@@ -101,6 +103,7 @@
             <p><b>v0.3</b><br>* Update: 对战斗按钮做了优化，可以直接重复按键来执行新一轮战斗</p>
             <p><b>v0.35</b><br>* Update: 将默认数据修改为计算信赖加成后的数值</p>
             <p><b>v0.36</b><br>* Update: 将更新日志移到页面最下端；优化了页面显示效果</p>
+            <p><b>v0.37</b><br>* New: 使用 Watch 功能，在总血量发生变更的时候，同步调整当前血量</p>
             
             </div>
             
@@ -172,6 +175,8 @@
                 winner : "[胜负未定]",
                 result : "敬请期待结果……",
                 
+                max_hp_1 : 3665,
+                max_hp_2 : 4225,
             };
             
             var methods = {
@@ -268,8 +273,7 @@
                         this.timer += 0.1;
                     },
                     
-                
-                    startBattle: function () {
+                    reset : function () {
                         this.isBattling = true;
                         this.timer = 0;
                             
@@ -278,6 +282,13 @@
                         
                         this.char_1.hp = this.char_1.hp_max;
                         this.char_2.hp = this.char_2.hp_max;
+                        
+                        this.result = "敬请期待结果……"
+                        
+                    },
+                
+                    startBattle: function () {
+                        this.reset()
                         
                         this.log = "[开始战斗！]<br>";              
                         
@@ -322,7 +333,6 @@
                             
                         }, this.char_2.atk_invl * 1000);
                         
-                        
                     }
             };
             
@@ -330,6 +340,18 @@
                 el: '#app',
                 data: data,
                 methods: methods,
+                watch : {
+                    // 如果最大血量改编,则运行这个函数
+                    max_hp_1 : function (newValue) {
+                        this.char_1.hp_max = newValue;
+                        this.char_1.hp = this.char_1.hp_max;
+                    },
+                    
+                    max_hp_2 : function (newValue) {
+                        this.char_2.hp_max = newValue;
+                        this.char_2.hp = this.char_2.hp_max;
+                    }
+                }
             });
             
             
