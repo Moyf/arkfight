@@ -196,7 +196,7 @@
                             this.char_2.hp -= dmg1;
                         }
                         
-                        this.log += `>> 🐬 ${this.char_1.name} 对 ${this.char_2.name} 造成了 ${dmg1} 点伤害`;
+                        this.log += `>> 🐳 ${this.char_1.name} 对 ${this.char_2.name} 造成了 ${dmg1} 点伤害`;
                         this.log += `<br>    ${this.char_2.name} 剩余血量: ${this.char_2.hp} <br><br>`;
                         
                         this.drawBlood('blood2', this.char_2.hp / this.char_2.hp_max)
@@ -206,11 +206,11 @@
                         
                         if (this.char_2.hp <= 0) {
                             this.winner = this.char_1.name;
-                            this.result = `🐬 胜利者：${this.winner}`;
+                            this.result = `🐳 胜利者：${this.winner}`;
                             
                             this.isBattling = false;
                             
-                            // alert(`🐬 ${this.char_1.name} 获得了最终胜利！`);
+                            // alert(`🐳 ${this.char_1.name} 获得了最终胜利！`);
                             
                         }
                         }
