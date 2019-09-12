@@ -13,7 +13,7 @@
 	<body onload="draw('blood1');draw('blood2');">
         <div id="face">
             <span title="你们不是喜欢让干员单挑互相值班吗？来啊，值个痛！">
-                <h1>干员单挑系统 v0.2</h1>
+                <h1>干员单挑系统 v0.3</h1>
             </span>
             <p><b>v0.1</b><br>* Init: 初始版本：支持两个纯物理干员进行你一刀我一刀的互砍，暂未考虑攻击间隔</p>
             
@@ -22,6 +22,9 @@
             
             <p><b>v0.2</b><br>* New: 绘制矩形以实现血条的显示
 		<br>* Fix：修复了死后可能多砍一刀的问题，同时把负值HP修正为0</p>
+		
+		
+            <p><b>v0.3</b><br>* Update: 对战斗按钮做了优化，可以直接重复按键来执行新一轮战斗</p>
 		
 		<p>好啦好啦，这个其实就是做着玩儿的~<br>纯属娱乐，别真的上头值班噢  (￣▽￣)ノ</p>
         </div>
@@ -260,6 +263,10 @@
                 
                     startBattle: function () {
 			this.isBattling = true;
+			this.timer = 0;
+			    
+			this.drawBlood('blood1', 1)
+			this.drawBlood('blood2', 1)
                         
                         this.char_1.hp = this.char_1.hp_max;
                         this.char_2.hp = this.char_2.hp_max;
