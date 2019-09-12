@@ -13,32 +13,20 @@
 	<body onload="draw('blood1');draw('blood2');">
         <div id="face">
             <span title="你们不是喜欢让干员单挑互相值班吗？来啊，值个痛！">
-                <h1>干员单挑系统 v0.35</h1>
-            </span>
-            <p><b>v0.1</b><br>* Init: 初始版本：支持两个纯物理干员进行你一刀我一刀的互砍，暂未考虑攻击间隔</p>
-            
-            <p><b>v0.15</b><br>* Update: 使用 setInterval 函数来实现攻击了间隔的计算（存在微小误差，可能导致某干员死了之后还能多砍一两刀，不影响结果）
-            <br>* New: 增加了两个小图标，提高辨识度</p>
-            
-            <p><b>v0.2</b><br>* New: 绘制矩形以实现血条的显示
-		<br>* Fix：修复了死后可能多砍一刀的问题，同时把负值HP修正为0</p>
+                <h1>干员单挑系统 v0.36</h1>
+            </span>		
 		
-		
-            <p><b>v0.3</b><br>* Update: 对战斗按钮做了优化，可以直接重复按键来执行新一轮战斗</p>
-            <p><b>v0.5</b><br>* Update: 将默认数据修改为计算信赖加成后的数值</p>
-		
-		
-		<p>好啦好啦，这个其实就是做着玩儿的~<br>纯属娱乐，别真的上头值班噢  (￣▽￣)ノ</p>
+		<p>这个其实就是做着玩儿的~<br>纯属娱乐，别真的上头值班噢  (￣▽￣)ノ</p>
         </div>
         
         <hr>
         
         <div id="app">
-            <h2>数据设置</h2>
-            
+            <h3>数据设置</h3>
+            查找到对应干员的数据后填入下方：
             <div>
                 
-                <h3>干员1 {{ char_1.name }}</h3>
+                <h4>干员1 {{ char_1.name }}</h4>
                 名称：<input v-model="char_1.name"><br>
                 总血量：<input v-model="char_1.hp_max"><br>
                 攻击力：<input v-model="char_1.atk"><br>
@@ -47,7 +35,7 @@
             </div>
             
             <div>
-                <h3>干员2 {{ char_2.name }}</h3>
+                <h4>干员2 {{ char_2.name }}</h4>
                 名称：<input v-model="char_2.name"><br>
                 总血量：<input v-model="char_2.hp_max"><br>
                 攻击力：<input v-model="char_2.atk"><br>
@@ -55,10 +43,10 @@
                 攻击间隔：<input v-model="char_2.atk_invl"><br>
             </div>
             <br>
-            <button v-on:click="startBattle">开始战斗！</button>
+            <button v-on:click="startBattle" style="height:60px;width:120px;">开始战斗！</button>
             
             <hr>
-            <h2>实时数据</h2>
+            <h3>实时数据</h3>
             <table border="1">
                 <tr>
                     <th>属性</td>
@@ -93,12 +81,30 @@
             
             <hr>
             
-            <h2>战斗记录</h2>
+            <h3>战斗记录</h3>
             <p>计时：{{ timer }}</p>
             <p v-html="log"></p>
             
             <hr>
             
+            <div id="devlog" height="300">
+            <h3>更新日志</h3>
+            <p><b>v0.1</b><br>* Init: 初始版本：支持两个纯物理干员进行你一刀我一刀的互砍，暂未考虑攻击间隔</p>
+            
+            <p><b>v0.15</b><br>* Update: 使用 setInterval 函数来实现攻击了间隔的计算（存在微小误差，可能导致某干员死了之后还能多砍一两刀，不影响结果）
+            <br>* New: 增加了两个小图标，提高辨识度</p>
+            
+            <p><b>v0.2</b><br>* New: 绘制矩形以实现血条的显示
+		<br>* Fix：修复了死后可能多砍一刀的问题，同时把负值HP修正为0</p>
+		
+		
+            <p><b>v0.3</b><br>* Update: 对战斗按钮做了优化，可以直接重复按键来执行新一轮战斗</p>
+            <p><b>v0.35</b><br>* Update: 将默认数据修改为计算信赖加成后的数值</p>
+            <p><b>v0.36</b><br>* Update: 将更新日志移到页面最下端；优化了页面显示效果</p>
+            
+            </div>
+            
+            <hr>
             <p>Author: Moy</p>
 
         </div>
@@ -264,16 +270,16 @@
                     
                 
                     startBattle: function () {
-			this.isBattling = true;
-			this.timer = 0;
-			    
-			this.drawBlood('blood1', 1)
-			this.drawBlood('blood2', 1)
+                        this.isBattling = true;
+                        this.timer = 0;
+                            
+                        this.drawBlood('blood1', 1)
+                        this.drawBlood('blood2', 1)
                         
                         this.char_1.hp = this.char_1.hp_max;
                         this.char_2.hp = this.char_2.hp_max;
                         
-                        this.log = "[开始战斗！]<br>";                  
+                        this.log = "[开始战斗！]<br>";              
                         
                         // 计时器
                         var intervalCount = setInterval( () => {
@@ -282,10 +288,13 @@
                             
                             if (this.isBattling == false) {
                                 clearInterval(intervalCount);
-                            }
-                            
+                            };
                             
                         }, 100);
+                        
+                        // 先互砍一刀
+                        this.attack1to2();
+                        this.attack2to1();
                         
                         
                         // 前者的攻击计算
