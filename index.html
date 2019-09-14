@@ -6,41 +6,71 @@
     
 	<head>
 		<meta charset="utf-8">
-		<title>干员单挑系统</title>
+		<title>明日方舟|干员单挑系统</title>
         <script src="https://cdn.jsdelivr.net/npm/vue" type="text/javascript" charset="utf-8"></script>
 	</head>
 
 	<body onload="draw('blood1');draw('blood2');">
         <div id="face">
             <span title="你们不是喜欢让干员单挑互相值班吗？来啊，值个痛！">
-                <h1>干员单挑系统 v0.37</h1>
+                <h1>明日方舟|干员单挑系统 v0.5</h1>
             </span>		
 		
-		<p>这个其实就是做着玩儿的~<br>纯属娱乐，别真的上头值班噢  (￣▽￣)ノ</p>
+		<p>Made by Moy</p>
         </div>
         
         <hr>
         
         <div id="app">
             <h3>数据设置</h3>
-            查找到对应干员的数据后填入下方：
+            直接将对应角色的数据填入下方即可，也可以从下拉选框快速选择六星干员。
+            如果有持续性增伤一类的技能，可直接将计算后的数值填入（潜能同理）。
+            
             <div>
                 
-                <h4>干员1 {{ char_1.name }}</h4>
+                <h4>角色1 {{ char_1.name }}</h4>
+                快速选择
+                <select v-model="selected1" v-on:change="selectChar1">
+                    <option v-for="char in chars" v-bind:value="char.value">{{char.text}}</option>
+                </select><br>
+                
                 名称：<input v-model="char_1.name"><br>
                 总血量：<input v-model="max_hp_1"><br>
                 攻击力：<input v-model="char_1.atk"><br>
                 防御力：<input v-model="char_1.def"><br>
+                法术抗性：<input v-model="char_1.mgc_def"><br>
                 攻击间隔：<input v-model="char_1.atk_invl"><br>
+                攻击类型：
+                <input type="radio" id="type1phy" value="physic" v-model="char_1.type">
+                <label for="type1phy">物理</label>
+                <input type="radio" id="type1mgc" value="magic" v-model="char_1.type">
+                <label for="type1mgc">法术</label>
+                <input type="radio" id="type1med" value="medic" v-model="char_1.type">
+                <label for="type1med">治疗</label>
+                <br>
             </div>
             
             <div>
-                <h4>干员2 {{ char_2.name }}</h4>
+                <h4>角色2 {{ char_2.name }}</h4>
+                快速选择
+                <select v-model="selected2" v-on:change="selectChar2">
+                    <option v-for="char in chars" v-bind:value="char.value">{{char.text}}</option>
+                </select><br>
+                
                 名称：<input v-model="char_2.name"><br>
                 总血量：<input v-model="max_hp_2"><br>
                 攻击力：<input v-model="char_2.atk"><br>
                 防御力：<input v-model="char_2.def"><br>
+                法术抗性：<input v-model="char_2.mgc_def"><br>
                 攻击间隔：<input v-model="char_2.atk_invl"><br>
+                攻击类型：
+                <input type="radio" id="type2phy" value="physic" v-model="char_2.type">
+                <label for="type2phy">物理</label>
+                <input type="radio" id="type2mgc" value="magic" v-model="char_2.type">
+                <label for="type2mgc">法术</label>
+                <input type="radio" id="type2med" value="medic" v-model="char_2.type">
+                <label for="type2med">治疗</label>
+                <br>
             </div>
             <br>
             <button v-on:click="startBattle" style="height:60px;width:120px;">开始战斗！</button>
@@ -50,15 +80,15 @@
             <table border="1">
                 <tr>
                     <th>属性</td>
-                    <th>{{char_1.name}}</td>
-                    <th>{{char_2.name}}</td>
+                    <th>{{char_1.icon}}{{char_1.name}}</td>
+                    <th>{{char_2.icon}}{{char_2.name}}</td>
                 </tr>
                 <tr>
                     <td>血量</td>
-                    <!-- <td><canvas id="blood1" width="100" height="10">您的浏览器不支持H5 canvas属性</canvas><br>{{char_1.hp}} / {{ char_1.hp_max }}</td>
-                    <td><canvas id="blood2" width="100" height="10">您的浏览器不支持H5 canvas属性</canvas><br>{{char_2.hp}} / {{ char_2.hp_max }}</td> -->
-                    <td><canvas id="blood1" width="100" height="10">您的浏览器不支持H5 canvas属性</canvas><br>{{ char_1.hp }} / {{ max_hp_1 }}</td>
-                    <td><canvas id="blood2" width="100" height="10">您的浏览器不支持H5 canvas属性</canvas><br>{{ char_2.hp }} / {{ max_hp_2 }}</td>
+                    <!-- <td><canvas id="blood1" width="100" height="10">您的浏览器不支持H5 canvas属性</canvas><br>{{char_1.hp}} / {{ char_1.max_hp }}</td>
+                    <td><canvas id="blood2" width="100" height="10">您的浏览器不支持H5 canvas属性</canvas><br>{{char_2.hp}} / {{ char_2.max_hp }}</td> -->
+                    <td><canvas id="blood1" width="100" height="10">您的浏览器不支持H5 canvas属性</canvas><br>{{ char_1.hp | rounding0 }} / {{ max_hp_1 }}</td>
+                    <td><canvas id="blood2" width="100" height="10">您的浏览器不支持H5 canvas属性</canvas><br>{{ char_2.hp | rounding0 }} / {{ max_hp_2 }}</td>
                     
                 </tr>
                 <tr>
@@ -67,9 +97,19 @@
                     <td>{{char_2.atk}}</td>
                 </tr>
                 <tr>
+                    <td>攻击类型</td>
+                    <td>{{char_1.type}}</td>
+                    <td>{{char_2.type}}</td>
+                </tr>
+                <tr>
                     <td>防御力</td>
                     <td>{{char_1.def}}</td>
                     <td>{{char_2.def}}</td>
+                </tr>
+                <tr>
+                    <td>法术抗性</td>
+                    <td>{{char_1.mgc_def}}</td>
+                    <td>{{char_2.mgc_def}}</td>
                 </tr>
                 <tr>
                     <td>攻击间隔</td>
@@ -84,7 +124,7 @@
             <hr>
             
             <h3>战斗记录</h3>
-            <p>计时：{{ timer }}</p>
+            <p>计时：{{ timer | rounding1 }}</p>
             <p v-html="log"></p>
             
             <hr>
@@ -94,16 +134,24 @@
             <p><b>v0.1</b><br>* Init: 初始版本：支持两个纯物理干员进行你一刀我一刀的互砍，暂未考虑攻击间隔</p>
             
             <p><b>v0.15</b><br>* Update: 使用 setInterval 函数来实现攻击了间隔的计算（存在微小误差，可能导致某干员死了之后还能多砍一两刀，不影响结果）
-            <br>* New: 增加了两个小图标，提高辨识度</p>
+            <br>+ New: 增加了两个小图标，提高辨识度</p>
             
             <p><b>v0.2</b><br>* New: 绘制矩形以实现血条的显示
-		<br>* Fix：修复了死后可能多砍一刀的问题，同时把负值HP修正为0</p>
+            <br>* Fix：修复了死后可能多砍一刀的问题，同时把负值HP修正为0</p>
 		
 		
             <p><b>v0.3</b><br>* Update: 对战斗按钮做了优化，可以直接重复按键来执行新一轮战斗</p>
             <p><b>v0.35</b><br>* Update: 将默认数据修改为计算信赖加成后的数值</p>
             <p><b>v0.36</b><br>* Update: 将更新日志移到页面最下端；优化了页面显示效果</p>
-            <p><b>v0.37</b><br>* New: 使用 Watch 功能，在总血量发生变更的时候，同步调整当前血量</p>
+            <p><b>v0.37</b><br>+ New: 使用 Watch 功能，在总血量发生变更的时候，同步调整当前血量</p>
+            
+            <p><b>v0.5 大幅度更新！</b>
+            <br>+ New: 增加了预设干员选择框，可以快速选取六星干员及特殊怪物的数据（均为LV1初始值）
+            <br>+ New: 为所有六星干员添加了专属小图标
+            <br>+ New: 支持物理、法术、治疗三种可选攻击类型，现在可以计算法术伤害，或是对自己进行治疗
+            <br>* Update: 优化了数字的显示
+            
+            </p>
             
             </div>
             
@@ -121,25 +169,9 @@
                 }
                 
                 var context = canvas.getContext('2d');
-                // context.fillStyle = "darkred";
-                // context.fillRect(0, 0, 200, 6);
+                
                 context.fillStyle = "red";
                 context.fillRect(0, 0, 100, 6);
-                
-                // var canvas = document.getElementById(id);
-                // 
-                // if (canvas == null){
-                //     return false;
-                // }
-                // 
-                // var context = canvas.getContext('2d');
-                // context.fillStyle = "eeefff";
-                // context.fillRect(0, 0, 200, 5);
-                // context.fillStyle = "green";
-                // context.strokeStyle = "red";
-                // context.lineWidth = 1;
-                // context.fillRect(50, 50, 100, 100);
-                // context.strokeRect(50, 50, 100, 100);
                 
             }
         </script>
@@ -151,22 +183,27 @@
                 author: "Moy",
                 
                 char_1 : {
-                    name : "斯卡蒂",
-                    hp_max : 3665,
-                    hp : 3665,
-                    atk : 1013,
-                    def : 303,
-                    atk_invl : 1.5,
-                    
+                    name : "满级能天使",
+                    max_hp : 1673,
+                    hp : 1673,
+                    atk : 630,
+                    def : 161,
+                    mgc_def : 0,
+                    atk_invl : 1,
+                    type : "physic",
+                    icon : "🥧",
                 },
                 
                 char_2 : {
-                    name : "赫拉格",
-                    hp_max : 4225,
-                    hp : 4225,
-                    atk : 832,
-                    def : 334,
-                    atk_invl : 1.2,
+                    name : "重装防御组长",
+                    max_hp : 10000,
+                    hp : 10000,
+                    atk : 600,
+                    def : 1000,
+                    mgc_def: 0,
+                    atk_invl : 2.6,
+                    type: "physic",
+                    icon : "👤",
                 },
                 
                 log : "[战斗一触即发]",
@@ -177,165 +214,493 @@
                 
                 max_hp_1 : 3665,
                 max_hp_2 : 4225,
+                
+                sel_1 : "斯卡蒂",
+                sel_2 : "赫拉格",
+                
+                selected1 : '',
+                selected2 : '',
+                
+                type1 : '',
+                type2 : '',
+                
+                chars : [
+                    {text:'斯卡蒂', value:'skadi'}, 
+                    {text:'赫拉格', value:'hellagur'}, 
+                    
+                    {text:'艾雅法拉', value:'eyjafjalla'},
+                    {text:'安洁莉娜', value:'angelina'},
+                    {text:'陈', value:'chen'},
+                    {text:'黑', value:'schwarz'},
+                    {text:'能天使', value:'exusiai'},
+                    {text:'塞雷娅', value:'saria'},
+                    {text:'闪灵', value:'shining'},
+                    {text:'推进之王', value:'siege'},
+                    {text:'星熊', value:'hoshiguma'},
+                    {text:'夜莺', value:'nightingale'},
+                    {text:'伊芙利特', value:'ifrit'},
+                    {text:'银灰', value:'silverash'},
+
+                    {text:'--自定义--', value:'custom'},
+                    
+                    
+                    {text:'[重装防御组长]', value:'enemy_high_def'},
+                    {text:'[术士组长]', value:'enemy_wizard'},
+                    
+                    ],
+                
+                info_format : {name:"name", max_hp:"max_hp", atk:"atk", def:"def", mgc_def:"mgc_def", 
+                    atk_invl:"atk_invl", type : "type", icon: "icon"}, 
+                
+                // char_info_skadi : {
+                //     name : "斯卡蒂",
+                //     max_hp : 3665,
+                //     atk : 1013,
+                //     def : 303,
+                //     atk_invl : 1.5,
+                // },
+                // 
+                // char_info_hellagur : {
+                //     name : "赫拉格",
+                //     max_hp : 4225,
+                //     atk : 832,
+                //     def : 334,
+                //     atk_invl : 1.2,
+                // },
+                
+                char_info_custom : {
+                    name : "Moy",
+                    max_hp : 1,
+                    atk : 1,
+                    def : 1,
+                    mgc_def: 90,
+                    atk_invl : 1,
+                    type: "physic",
+                    icon : "😆",
+                },
+                
+                
+                char_info_eyjafjalla : {
+                    name : "艾雅法拉",
+                    max_hp : 732,
+                    atk: 292,
+                    def: 46,
+                    mgc_def: 10,
+                    atk_invl: 1.6,
+                    type: "magic",
+                    icon: "💥",
+                },
+                
+                char_info_angelina : {
+                    name : "安洁莉娜",
+                    max_hp : 629,
+                    atk: 228,
+                    def: 53,
+                    mgc_def: 15,
+                    atk_invl: 1.9,
+                    type: "magic",
+                    icon: "🦊",
+                },
+                
+                char_info_chen : {
+                    name : "陈",
+                    max_hp : 1229,
+                    atk: 249,
+                    def: 154,
+                    mgc_def: 0,
+                    atk_invl: 1.3,
+                    type: "physic",
+                    icon: "🐲",
+                },
+                
+                char_info_hellagur : {
+                    name : "赫拉格",
+                    max_hp : 1568,
+                    atk: 340,
+                    def: 160,
+                    mgc_def: 0,
+                    atk_invl: 1.2,
+                    type: "physic",
+                    icon: "🦅",
+                },
+                
+                char_info_schwarz : {
+                    name : "黑",
+                    max_hp : 781,
+                    atk: 357,
+                    def: 86,
+                    mgc_def: 0,
+                    atk_invl: 1.6,
+                    type: "physic",
+                    icon: "🐱‍👤",
+                },
+                
+                char_info_exusiai : {
+                    name : "能天使",
+                    max_hp : 711,
+                    atk: 183,
+                    def: 57,
+                    mgc_def: 0,
+                    atk_invl: 1,
+                    type: "physic",
+                    icon: "🥧",
+                },
+                
+                char_info_saria : {
+                    name : "塞雷娅",
+                    max_hp : 1309,
+                    atk: 200,
+                    def: 248,
+                    mgc_def: 10,
+                    atk_invl: 1.2,
+                    type: "physic",
+                    icon: "💎",
+                },
+                
+                char_info_shining : {
+                    name : "闪灵",
+                    max_hp : 854,
+                    atk: 180,
+                    def: 60,
+                    mgc_def: 0,
+                    atk_invl: 2.85,
+                    type: "medic",
+                    icon: "✨",
+                },
+                
+                char_info_skadi : {
+                    name : "斯卡蒂",
+                    max_hp : 1442,
+                    atk: 415,
+                    def: 116,
+                    mgc_def: 0,
+                    atk_invl: 1.5,
+                    type: "physic",
+                    icon: "🐬",
+                },
+                
+                char_info_siege : {
+                    name : "推进之王",
+                    max_hp : 911,
+                    atk: 212,
+                    def: 154,
+                    mgc_def: 0,
+                    atk_invl: 1.05,
+                    type: "physic",
+                    icon: "🦁",
+                },
+                
+                char_info_hoshiguma : {
+                    name : "星熊",
+                    max_hp : 1602,
+                    atk: 221,
+                    def: 257,
+                    mgc_def: 0,
+                    atk_invl: 1.2,
+                    type: "physic",
+                    icon: "🐻",
+                },
+                
+                char_info_nightingale : {
+                    name : "夜莺",
+                    max_hp : 796,
+                    atk: 132,
+                    def: 80,
+                    mgc_def: 5,
+                    atk_invl: 2.85,
+                    type: "medic",
+                    icon: "🐦",
+                },
+                
+                char_info_ifrit : {
+                    name : "伊芙利特",
+                    max_hp : 687,
+                    atk: 377,
+                    def: 52,
+                    mgc_def: 10,
+                    atk_invl: 2.9,
+                    type: "magic",
+                    icon: "😈",
+                },
+                
+                char_info_silverash : {
+                    name : "银灰",
+                    max_hp : 1075,
+                    atk: 297,
+                    def: 189,
+                    mgc_def: 5,
+                    atk_invl: 1.3,
+                    type: "physic",
+                    icon: "🐆",
+                },
+                
+                
+                char_info_enemy_high_def : {
+                    name : "重装防御组长",
+                    max_hp : 10000,
+                    atk : 600,
+                    def : 1000,
+                    mgc_def: 0,
+                    atk_invl : 2.6,
+                    type: "physic",
+                    icon : "👤",
+                },
+                
+                char_info_enemy_wizard : {
+                    name : "术士组长",
+                    max_hp : 2400,
+                    atk : 300,
+                    def : 80,
+                    mgc_def: 50,
+                    atk_invl : 4,
+                    type: "magic",
+                    icon : "🧙‍️️",
+                },
+                
+                dict_char_infos : {},
+                
             };
             
+                        
             var methods = {
-                    drawBlood : function(id, percent) {
-                        var canvas = document.getElementById(id);
+                defineCharsDict : function () {
+                    this.dict_char_infos = {
+                        custom : this.char_info_custom,
+                        eyjafjalla : this.char_info_eyjafjalla,
+                        angelina : this.char_info_angelina,
+                        chen : this.char_info_chen,
+                        hellagur : this.char_info_hellagur,
+                        schwarz : this.char_info_schwarz,
+                        exusiai : this.char_info_exusiai,
+                        saria : this.char_info_saria,
+                        shining : this.char_info_shining,
+                        skadi : this.char_info_skadi,
+                        siege : this.char_info_siege,
+                        hoshiguma : this.char_info_hoshiguma,
+                        nightingale : this.char_info_nightingale,
+                        ifrit : this.char_info_ifrit,
+                        silverash : this.char_info_silverash,
+                        enemy_high_def : this.char_info_enemy_high_def,
+                        enemy_wizard : this.char_info_enemy_wizard,
+
+                    };
                         
-                        if (canvas == null){
-                            return false;
-                        }
-                        
-                        var context = canvas.getContext('2d');
-                        context.fillStyle = "darkred";
-                        context.fillRect(0, 0, 100, 6);
-                        context.fillStyle = "red";
-                        context.fillRect(0, 0, percent * 100, 6);
-                        
-                    },
-                    
-                    // 左向右进攻
-                    attack1to2 : function() {
-                        if (this.isBattling){
-                        
-                        var dmg1 = this.char_1.atk - this.char_2.def;
-                        
-                        // 抛光
-                        if (dmg1 < this.char_1.atk * 0.05) {
-                            dmg1 = this.char_1.atk * 0.05;
-                        }
-                        
-                        if (this.char_2.hp - dmg1 < 0) {
-                            this.char_2.hp = 0;
-                        } else {
-                            this.char_2.hp -= dmg1;
-                        }
-                        
-                        this.log += `>> 🐳 ${this.char_1.name} 对 ${this.char_2.name} 造成了 ${dmg1} 点伤害`;
-                        this.log += `<br>    ${this.char_2.name} 剩余血量: ${this.char_2.hp} <br><br>`;
-                        
-                        this.drawBlood('blood2', this.char_2.hp / this.char_2.hp_max)
-                        
-                        // this.log += `>> ${this.char_1.name} 当前剩余血量：${this.char_1.hp}<br>`;
-                        // this.log += `>> ${this.char_2.name} 当前剩余血量：${this.char_2.hp}<br>---<br>`;
-                        
-                        if (this.char_2.hp <= 0) {
-                            this.winner = this.char_1.name;
-                            this.result = `🐳 胜利者：${this.winner}`;
-                            
-                            this.isBattling = false;
-                            
-                            // alert(`🐳 ${this.char_1.name} 获得了最终胜利！`);
-                            
-                        }
-                        }
-                    },
-                    
-                    // 右向左进攻
-                    attack2to1 : function() {
-                        if (this.isBattling){
-                        
-                        var dmg2 = this.char_2.atk - this.char_1.def;
-                        
-                        // 抛光
-                        if (dmg2 < this.char_2.atk * 0.05) {
-                            dmg2 = this.char_2.atk * 0.05;
-                        }
-                        
-                        if (this.char_1.hp - dmg2 < 0) {
-                            this.char_1.hp = 0;
-                        } else {
-                            this.char_1.hp -= dmg2;
-                        }
-                        
-                        
-                        this.drawBlood('blood1', this.char_1.hp / this.char_1.hp_max)
-                        
-                        this.log += `<< 🦅 ${this.char_2.name} 对 ${this.char_1.name} 造成了 ${dmg2} 点伤害`;
-                        this.log += `<br>    ${this.char_1.name} 剩余血量: ${this.char_1.hp} <br><br>`;
-                        
-                        // this.log += `<< ${this.char_1.name} 当前剩余血量：${this.char_1.hp}<br>`;
-                        // this.log += `<< ${this.char_2.name} 当前剩余血量：${this.char_2.hp}<br>---<br>`;
-                        
-                        if (this.char_1.hp <= 0) {
-                            this.winner = this.char_2.name;
-                            this.result = `🦅 胜利者：${this.winner}`;
-                            
-                            this.isBattling = false;
-                            
-                            // alert(`🦅 ${this.char_2.name} 获得了最终胜利！`);
-                        }
-                        }
-                    },
-                    
-                    timerCount : function () {
-                        this.timer += 0.1;
-                    },
-                    
-                    reset : function () {
-                        this.isBattling = true;
-                        this.timer = 0;
-                            
-                        this.drawBlood('blood1', 1)
-                        this.drawBlood('blood2', 1)
-                        
-                        this.char_1.hp = this.char_1.hp_max;
-                        this.char_2.hp = this.char_2.hp_max;
-                        
-                        this.result = "敬请期待结果……"
-                        
-                    },
+                },
                 
-                    startBattle: function () {
-                        this.reset()
+                
+                setCharData : function (tarChar, sel) {
+                    this.defineCharsDict();
+                    
+                    console.log(`设定为目标干员: ${sel}`)                        
+                    
+                    var target_char_info = this.dict_char_infos[sel]
+                    
+                    // for (var key in this.info_format){
+                    //     console.log(key)
+                    //     console.log(`[${key}] ${tarChar.key} -> ${target_char_info.key}`)
+                    //     tarChar[key] = target_char_info[key]
+                    // }
+                    
+                    tarChar.max_hp = target_char_info.max_hp
+                    
+                    tarChar.name = target_char_info.name
+                    tarChar.atk = target_char_info.atk
+                    tarChar.def = target_char_info.def
+                    tarChar.mgc_def = target_char_info.mgc_def
+                    tarChar.atk_invl = target_char_info.atk_invl
+                    
+                    tarChar.type = target_char_info.type
+                    tarChar.icon = target_char_info.icon
+                    
+                    
+                },
+                
+                selectChar1 : function () {
+                    this.setCharData(this.char_1, this.selected1)
+                    this.max_hp_1 = this.char_1.max_hp
+                    this.drawBlood('blood1', 1)
+                                       
+                },
+                
+                selectChar2 : function () {
+                    this.setCharData(this.char_2, this.selected2)
+                    this.max_hp_2 = this.char_2.max_hp
+                    this.drawBlood('blood2', 1)
+                    
+                },
+                
+                // 绘制角色血条
+                drawBlood : function(id, percent) {
+                    var canvas = document.getElementById(id);
+                    
+                    if (canvas == null){
+                        return false;
+                    }
+                    
+                    var context = canvas.getContext('2d');
+                    context.fillStyle = "darkred";
+                    context.fillRect(0, 0, 100, 6);
+                    context.fillStyle = "red";
+                    context.fillRect(0, 0, percent * 100, 6);
+                    
+                },
+                
+                
+                // 通用的进攻函数,第一个参数为进攻方,第二个参数为受击方
+                attackProcess : function(char1, char2) {
+                    if (this.isBattling){
+                    
+                    if (char1.type == "physic"){
+                        var dmg1 = char1.atk - char2.def;
                         
-                        this.log = "[开始战斗！]<br>";              
+                        var isArmored = false;
                         
-                        // 计时器
-                        var intervalCount = setInterval( () => {
-                            
-                            this.timerCount();
-                            
-                            if (this.isBattling == false) {
-                                clearInterval(intervalCount);
-                            };
-                            
-                        }, 100);
+                        // 抛光
+                        if (dmg1 < char1.atk * 0.05) {
+                            dmg1 = char1.atk * 0.05;
+                            isArmored = true;
+                        }
                         
-                        // 先互砍一刀
-                        this.attack1to2();
-                        this.attack2to1();
+                        // 确认是否打到负值血
+                        if (char2.hp - dmg1 < 0) {
+                            char2.hp = 0;
+                        } else {
+                            char2.hp -= dmg1;
+                        }
                         
+                        hp_percent = char2.hp / char2.max_hp * 100
                         
-                        // 前者的攻击计算
-                        var interval1 = setInterval( () => {
-                            
-                            this.attack1to2();
-                            
-                            if (this.isBattling == false) {
-                                clearInterval(interval1);
-                            }
-                            
-                            
-                        }, this.char_1.atk_invl * 1000);
+                        if (isArmored){
+                            this.log += `>> ${char1.icon} <b>${char1.name}</b> 未能击穿 <b>${char2.name}</b> 的护甲,仅仅造成 <i>${dmg1.toFixed(0)}</i> 点保底伤害`;
+                        } else {
+                            this.log += `>> ${char1.icon} <b>${char1.name}</b> 展开攻势,对<b>${char2.name}</b> 造成了 ${dmg1.toFixed(0)} 点物理伤害`;
+                        }
                         
-                        
-                        // 后者的攻击计算
-                        var interval2 = setInterval( () => {
-                            
-                            this.attack2to1()
-                            
-                            if (this.isBattling == false) {
-                                clearInterval(interval2);
-                            }
-                            
-                            
-                        }, this.char_2.atk_invl * 1000);
+                        this.log += `<br>    ${char2.name} 剩余血量: ${char2.hp.toFixed(0)} (${hp_percent.toFixed(2)}%)<br><br>`;
                         
                     }
-            };
+                    
+                    else if (char1.type == "magic"){
+                        var dmg1 = char1.atk * (1 - (char2.mgc_def/100));
+                        
+                        // 确认是否打到负值血
+                        if (char2.hp - dmg1 < 0) {
+                            char2.hp = 0;
+                        } else {
+                            char2.hp -= dmg1;
+                        }
+                        
+                        hp_percent = char2.hp / char2.max_hp * 100
+                        
+                        this.log += `>> ${char1.icon} <b>${char1.name}</b> 施展源石技艺,对 <b>${char2.name}</b> 造成了 ${dmg1.toFixed(0)} 点法术伤害`;
+                        this.log += `<br>    ${char2.name} 剩余血量: ${char2.hp.toFixed(0)}(${hp_percent.toFixed(2)}%) <br><br>`;
+                        
+                    }
+                    else if (char1.type == "medic"){
+                        var dmg1 = char1.atk;
+                        
+                        // 确认是否回出满血
+                        if (char1.hp + dmg1 > char1.max_hp) {
+                            char1.hp = char1.max_hp;
+                        } else {
+                            char1.hp += dmg1;
+                        }
+                        
+                        hp_percent = char1.hp / char1.max_hp * 100
+                        
+                        this.log += `>> ${char1.icon} <b>${char1.name}</b> 念动咒语,为自己恢复了了 ${dmg1.toFixed(0)} 点生命值`;
+                        this.log += `<br>    ${char1.name} 剩余血量: ${char1.hp.toFixed(0)} (${hp_percent.toFixed(2)}%) <br><br>`;
+                    }
+                                        
+                    if (char2.hp <= 0) {
+                        this.log += `>> <b>${char2.name}</b> 力竭倒下了……<br><br>`;
+                        this.winner = char1.name;
+                        this.result = `${char1.icon} 胜利者：${this.winner}`;
+                        
+                        this.isBattling = false;                            
+                    }
+                    }
+                },
+
+                
+                // 左向右进攻
+                attack1to2 : function() {
+                    this.attackProcess(this.char_1, this.char_2)
+                    this.drawBlood('blood1', this.char_1.hp / this.char_1.max_hp)
+                    this.drawBlood('blood2', this.char_2.hp / this.char_2.max_hp)
+                },
+                
+                // 右向左进攻
+                attack2to1 : function() {
+                    this.attackProcess(this.char_2, this.char_1)
+                    this.drawBlood('blood1', this.char_1.hp / this.char_1.max_hp)
+                    this.drawBlood('blood2', this.char_2.hp / this.char_2.max_hp)
+                },
+                    
+                timerCount : function () {
+                    this.timer += 0.1;
+                },
+                
+                reset : function () {
+                    this.isBattling = true;
+                    this.timer = 0;
+                        
+                    this.drawBlood('blood1', 1)
+                    this.drawBlood('blood2', 1)
+                    
+                    this.char_1.hp = this.char_1.max_hp;
+                    this.char_2.hp = this.char_2.max_hp;
+                    
+                    this.result = "敬请期待结果……"
+                    
+                },
             
+                startBattle: function () {
+                    this.reset()
+                    
+                    this.log = "[开始战斗！]<br>";              
+                    
+                    // 计时器
+                    var intervalCount = setInterval( () => {
+                        
+                        this.timerCount();
+                        
+                        if (this.isBattling == false) {
+                            clearInterval(intervalCount);
+                        };
+                        
+                    }, 100);
+                    
+                    // 先互砍一刀
+                    this.attack1to2();
+                    this.attack2to1();
+                    
+                    // 前者的攻击计算
+                    var interval1 = setInterval( () => {
+                        
+                        this.attack1to2();
+                        
+                        if (this.isBattling == false) {
+                            clearInterval(interval1);
+                        }
+                        
+                    }, this.char_1.atk_invl * 1000);
+                    
+                    
+                    // 后者的攻击计算
+                    var interval2 = setInterval( () => {
+                        
+                        this.attack2to1()
+                        
+                        if (this.isBattling == false) {
+                            clearInterval(interval2);
+                        }
+                        
+                    }, this.char_2.atk_invl * 1000);
+                    
+                }
+            };
+                        
             var vm = new Vue({
                 el: '#app',
                 data: data,
@@ -343,15 +708,23 @@
                 watch : {
                     // 如果最大血量改编,则运行这个函数
                     max_hp_1 : function (newValue) {
-                        this.char_1.hp_max = newValue;
-                        this.char_1.hp = this.char_1.hp_max;
+                        this.char_1.max_hp = newValue;
+                        this.char_1.hp = this.char_1.max_hp;
                     },
                     
                     max_hp_2 : function (newValue) {
-                        this.char_2.hp_max = newValue;
-                        this.char_2.hp = this.char_2.hp_max;
+                        this.char_2.max_hp = newValue;
+                        this.char_2.hp = this.char_2.max_hp;
                     }
-                }
+                },
+                filters: {
+                  rounding0 (value) {
+                    return value.toFixed(0)
+                  },
+                  rounding1 (value) {
+                    return value.toFixed(1)
+                  },
+                },
             });
             
             
